@@ -10,7 +10,6 @@ t.ipynb
 tgcf_external.py
 t.yml
 test.py
-tgcf.config.json
 *.txt
 todo
 *.ipynb
@@ -124,7 +123,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
 .venv
 env/
 venv/
