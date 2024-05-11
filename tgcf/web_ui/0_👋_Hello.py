@@ -11,7 +11,7 @@ st.set_page_config(
 )
 hide_st(st)
 switch_theme(st,CONFIG)
-st.write("# Welcome to tgcf 👋")
+st.write("# Welcome to MagicMirror 👋")
 
 html = """
 <p align="center">
