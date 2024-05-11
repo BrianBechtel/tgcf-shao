@@ -17,7 +17,7 @@ from tgcf import config
 from tgcf import storage as st
 from tgcf.config import CONFIG, get_SESSION, write_config
 from tgcf.plugins import apply_plugins, load_async_plugins
-from tgcf.utils import clean_session_files, send_message
+from tgcf.utils import clean_session_files, send_message, send_album
 
 
 async def forward_job() -> None:
@@ -44,7 +44,7 @@ async def forward_job() -> None:
             forward: config.Forward
             logging.info(f"Forwarding messages from {src} to {dest}")
             async for message in client.iter_messages(
-                src, reverse=True, offset_id=forward.offset
+                    src, reverse=True, offset_id=forward.offset
             ):
                 message: Message
                 event = st.DummyEvent(message.chat_id, message.id)
@@ -59,6 +59,12 @@ async def forward_job() -> None:
                     if not tm:
                         continue
                     st.stored[event_uid] = {}
+
+                    if message.media_album_id:
+                        # If message is an album, forward the album
+                        fwded_album_msg = await send_album(d, tm)
+                        for d in dest:
+                            st.stored[event_uid].update({d: fwded_album_msg.id})
 
                     if message.is_reply:
                         r_event = st.DummyEvent(

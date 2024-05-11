@@ -42,6 +42,29 @@ async def send_message(recipient: EntityLike, tm: "TgcfMessage") -> Message:
     tm.message.text = tm.text
     return await client.send_message(recipient, tm.message, reply_to=tm.reply_to)
 
+async def send_album(recipient: EntityLike, tm: "TgcfMessage") -> Message:
+    """Forward or send a copy of an album."""
+    client: TelegramClient = tm.client
+
+    if CONFIG.show_forwarded_from:
+        # 如果配置中设置了显示转发来源，则使用转发相册消息的方法
+        return await client.forward_messages(recipient, tm.message)
+
+    # 群组是否禁止转发
+    group_settings = await client.get_chat(recipient)
+    if group_settings.restrictions.forwarding:
+        downloaded_media = []
+
+        for media in tm.album:
+            file_path = await client.download_media(media)
+            downloaded_media.append(file_path)
+
+        return await client.send_album(recipient, downloaded_media, caption=tm.text, reply_to=tm.reply_to)
+
+    return await client.send_album(recipient, tm.album, caption=tm.text, reply_to=tm.reply_to)
+
+
+
 
 def cleanup(*files: str) -> None:
     """Delete the file names passed as args."""
