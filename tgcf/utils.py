@@ -44,52 +44,18 @@ async def send_message(recipient: EntityLike, tm: "TgcfMessage") -> Message:
 
 async def send_album(recipient: EntityLike, tm: "TgcfMessage") -> Message:
     """Forward or send a copy of an album."""
-    """client.send_file 构建一个相册消息"""
     client: TelegramClient = tm.client
 
-    if CONFIG.show_forwarded_from:
-        # 如果配置中设置了显示转发来源，则使用转发相册消息的方法
-        return await client.forward_messages(recipient, tm.message)
+    # 禁止使用转发方式，使用下载的方式发送相册
+    downloaded_media = []
 
-    # 群组是否禁止转发
-    async def send_album(recipient: EntityLike, tm: "TgcfMessage") -> Message:
-        """
-        Forward or send a copy of an album.
+    for media in tm.album:
+        file_path = await client.download_media(media)
+        downloaded_media.append(file_path)
 
-        Args:
-            recipient: The recipient entity to send the album to.
-            tm: TgcfMessage object containing the album and other message details.
+    return await client.send_album(recipient, downloaded_media, caption=tm.text, reply_to=tm.reply_to)
 
-        Returns:
-            The sent message object.
-        """
-        client: TelegramClient = tm.client
 
-        try:
-            if CONFIG.show_forwarded_from:
-                # 如果配置中设置了显示转发来源，则使用转发相册消息的方法
-                return await client.forward_messages(recipient, tm.message)
-
-            # 获取接收者实体
-            recipient_entity = await client.get_entity(recipient)
-
-            # 检查群组是否禁止转发
-            if recipient_entity.restrictions.forwarding:
-                # 群组禁止转发，下载相册中的媒体文件并发送
-                downloaded_media = []
-
-                for media in tm.album:
-                    file_path = await client.download_media(media)
-                    downloaded_media.append(file_path)
-
-                return await client.send_album(recipient, downloaded_media, caption=tm.text, reply_to=tm.reply_to)
-
-            # 群组允许转发，直接发送相册消息
-            return await client.send_album(recipient, tm.album, caption=tm.text, reply_to=tm.reply_to)
-
-        except Exception as e:
-            logging.exception(f"Error sending album: {e}")
-            return None
 
 
 def cleanup(*files: str) -> None:
