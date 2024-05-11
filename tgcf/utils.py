@@ -46,14 +46,22 @@ async def send_album(recipient: EntityLike, tm: "TgcfMessage") -> Message:
     """Forward or send a copy of an album."""
     client: TelegramClient = tm.client
 
-    # 禁止使用转发方式，使用下载的方式发送相册
+    # 获取相册消息
+    album = tm.message.photo_album if hasattr(tm.message, 'photo_album') else None
+
+    if album is None:
+        logging.warning("No album found in the message.")
+        return None
+
+    # 禁止使用转发方式，直接下载并发送原始相册消息
     downloaded_media = []
 
-    for media in tm.album:
+    for media in album:
         file_path = await client.download_media(media)
         downloaded_media.append(file_path)
 
     return await client.send_album(recipient, downloaded_media, caption=tm.text, reply_to=tm.reply_to)
+
 
 
 
