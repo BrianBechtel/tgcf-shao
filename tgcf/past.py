@@ -61,9 +61,9 @@ async def forward_job() -> None:
                     st.stored[event_uid] = {}
 
 
-                    if hasattr(message.media, "photo") or hasattr(message.media, "document"):
+                    if message.grouped_id != 0:
                         # 如果是相册消息，转发相册
-                        fwded_album_msg = await send_album(dest, tm)
+                        fwded_album_msg = await send_album(d, tm)
                         for d in dest:
                             st.stored[event_uid].update({d: fwded_album_msg.id})
 
