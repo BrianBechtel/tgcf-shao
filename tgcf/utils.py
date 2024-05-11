@@ -56,12 +56,18 @@ async def send_album(recipient: EntityLike, tm: "TgcfMessage") -> Message:
     # 禁止使用转发方式，直接下载并发送原始相册消息
     downloaded_media = []
 
-
     for media in album:
         file_path = await client.download_media(media)
         downloaded_media.append(file_path)
 
-    return await client.send_album(recipient, downloaded_media, caption=tm.text, reply_to=tm.reply_to)
+    try:
+        result = await client.send_album(recipient, downloaded_media, caption=tm.text, reply_to=tm.reply_to)
+        logging.info("Album sent successfully.")
+        return result
+    except Exception as e:
+        logging.error(f"Error sending album: {e}")
+        return None
+
 
 
 
