@@ -44,6 +44,7 @@ async def send_message(recipient: EntityLike, tm: "TgcfMessage") -> Message:
 
 async def send_album(recipient: EntityLike, tm: "TgcfMessage") -> Message:
     """Forward or send a copy of an album."""
+    """client.send_file 构建一个相册消息"""
     client: TelegramClient = tm.client
 
     if CONFIG.show_forwarded_from:

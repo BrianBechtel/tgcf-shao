@@ -63,8 +63,8 @@ async def forward_job() -> None:
 
                     if message.grouped_id != 0:
                         # 如果是相册消息，转发相册
-                        fwded_album_msg = await send_album(d, tm)
                         for d in dest:
+                            fwded_album_msg = await send_album(d, tm)
                             st.stored[event_uid].update({d: fwded_album_msg.id})
 
                     if message.is_reply:
