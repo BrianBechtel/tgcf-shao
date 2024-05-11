@@ -60,8 +60,8 @@ async def forward_job() -> None:
                         continue
                     st.stored[event_uid] = {}
 
-                    if message.media_album_id:
-                        # If message is an album, forward the album
+                    if len(message.media) > 1:
+                        # 如果是相册消息，转发相册
                         fwded_album_msg = await send_album(d, tm)
                         for d in dest:
                             st.stored[event_uid].update({d: fwded_album_msg.id})
