@@ -35,6 +35,8 @@ async def send_message(
     """Forward or send a copy, depending on config."""
     client: TelegramClient = tm.client
     if CONFIG.agent_fwd_cfg[agent_id].show_forwarded_from:
+
+        # TODO：在此对具体文件进行对应处理
         return await client.forward_messages(recipient, tm.message)
     if tm.new_file:
         message = await client.send_file(
