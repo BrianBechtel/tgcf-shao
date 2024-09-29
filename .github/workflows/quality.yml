@@ -1,0 +1,19 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: upgrade poetry
+        run: pip install poetry -U
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x' 
+      - uses: pre-commit/action@v3.0.1
