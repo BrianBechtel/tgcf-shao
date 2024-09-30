@@ -126,10 +126,10 @@ if check_password(st):
             if check:
                 with open(f"logs_{i}.txt", "w") as logs:
                     process = subprocess.Popen(
-                        [r"python", r"F:\github\tgcf-main\.venv\Scripts\tgcf", "--loud", mode, str(i)],
+                       # [r"python", r"F:\github\tgcf-main\.venv\Scripts\tgcf", "--loud", mode, str(i)],
 
                         # venv中暂时使用绝对路径
-                        # ["tgcf", "--loud", mode, str(i)],
+                        ["tgcf", "--loud", mode, str(i)],
                         stdout=logs,
                         stderr=subprocess.STDOUT,
                     )
