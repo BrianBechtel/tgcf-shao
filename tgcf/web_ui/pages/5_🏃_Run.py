@@ -12,16 +12,33 @@ from tgcf.web_ui.utils import hide_st, switch_theme
 CONFIG = read_config()
 
 
-def termination(agent_id:int):
-    st.code("process terminated!")
-    os.rename(f"logs_{i}.txt", f"old_logs_{i}.txt")
-    with open("old_logs.txt", "r") as f:
-        st.download_button(
-            "Download last logs", data=f.read(), file_name=f"tgcf_logs_{i}.txt"
-        )
+def termination(agent_id: int):
+    st.code("Process terminated!")
 
+    # 定义日志文件路径
+    old_log_file = f"old_logs_{agent_id}.txt"
+    new_log_file = f"logs_{agent_id}.txt"
+
+    # 检查文件是否存在
+    if os.path.exists(new_log_file):
+        # 重命名当前日志文件
+        os.rename(new_log_file, old_log_file)
+    else:
+        st.warning(f"No logs found to rename for agent {agent_id}")
+        return  # 退出函数，避免后续操作
+
+    # 确保 old_logs 文件存在后再读取
+    if os.path.exists(old_log_file):
+        with open(old_log_file, "r") as f:
+            st.download_button(
+                "Download last logs", data=f.read(), file_name=f"tgcf_logs_{agent_id}.txt"
+            )
+    else:
+        st.warning(f"Old logs not found for agent {agent_id}")
+
+    # 更新配置文件，将PID设置为0
     CONFIG = read_config()
-    CONFIG.agent_fwd_cfg[i].pid= 0
+    CONFIG.agent_fwd_cfg[agent_id].pid = 0
     write_config(CONFIG)
     st.button("Refresh page")
 
@@ -75,7 +92,7 @@ if check_password(st):
                     agent_fc.past.delay = st.slider(
                         "Delay in seconds",
                         0,
-                        100,
+                        1000,
                         value=agent_fc.past.delay,
                         key=f"delay {i}",
                     )
@@ -86,7 +103,7 @@ if check_password(st):
                         value=agent_fc.live.delete_sync,
                         key=f"del sync {i}",
                     )
-                if st.button("Save ", key=f"save {i}"):
+                if st.button("Save", key=f"save {i}"):
                     write_config(CONFIG)
 
             check = False
@@ -98,7 +115,7 @@ if check_password(st):
                 st.warning(
                     "You must click stop and then re-run tgcf to apply changes in config."
                 )
-                # check if process is running using pid
+                # Check if process is running using pid
                 try:
                     os.kill(CONFIG.agent_fwd_cfg[i].pid, signal.SIGCONT)
                 except Exception as err:
@@ -126,9 +143,9 @@ if check_password(st):
             if check:
                 with open(f"logs_{i}.txt", "w") as logs:
                     process = subprocess.Popen(
-                       # [r"python", r"F:\github\tgcf-main\.venv\Scripts\tgcf", "--loud", mode, str(i)],
+                        # ["python", r"F:\github\tgcf-main\.venv\Scripts\tgcf", "--loud", mode, str(i)],
 
-                        # venv中暂时使用绝对路径
+                        # 使用绝对路径以便venv中执行
                         ["tgcf", "--loud", mode, str(i)],
                         stdout=logs,
                         stderr=subprocess.STDOUT,
@@ -140,6 +157,7 @@ if check_password(st):
                 st.rerun()
 
             try:
+                # 获取要显示的日志行数
                 lines = st.slider(
                     "Lines of logs to show",
                     min_value=100,
@@ -147,14 +165,17 @@ if check_password(st):
                     step=100,
                     key=f"slider {i}",
                 )
-                temp_logs = f"logs_n_lines{i}.txt"
-                os.system(f"rm {temp_logs}")
-                with open(f"logs_{i}.txt", "r") as file:
-                    pass
 
-                os.system(f"tail -n {lines} logs_{i}.txt >> {temp_logs}")
-                with open(temp_logs, "r") as file:
-                    st.code(file.read())
+                # 打开日志文件并从文件末尾读取指定的行数
+                log_file_path = f"logs_{i}.txt"
+                with open(log_file_path, "r") as file:
+                    # 读取所有日志行并显示最后指定的行数
+                    log_lines = file.readlines()[-lines:]
+                    st.code("".join(log_lines))
+
             except FileNotFoundError as err:
-                st.write("No present logs found")
+                st.write(f"No logs found for {agent.alias}")
+            except Exception as err:
+                st.error(f"An error occurred while reading logs: {err}")
+
             st.button(f"Load more logs for {agent.alias}")
